@@ -1,0 +1,9 @@
+POST http://localhost:3000/api/acme/auth/register
+Content-Type: application/json
+
+{
+   "email": "alice@example.com",
+   "password": "s3cr3t",
+   "name": "Alice"
+}
+                  
