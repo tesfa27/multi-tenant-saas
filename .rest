@@ -6,4 +6,18 @@ Content-Type: application/json
    "password": "s3cr3t",
    "name": "Alice"
 }
-                  
+
+### Login Request
+
+POST http://localhost:3000/api/acme/auth/login
+Content-Type: application/json
+
+{
+   "email": "alice@example.com",
+   "password": "s3cr3t"
+}
+
+### Get Current User Request
+
+GET http://localhost:3000/api/acme/auth/me
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTZlY3p2cTAwMDE0eng0dHo1ODVicXUiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk2ZDc1YmIwMDAwNHpxaTB6NXpkMTZhIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjM2MzQwMDMsImV4cCI6MTc2MzYzNDkwM30.S8mNfVqi4oztmes2j1wTmB7NJiWfsg8_h7T39Efa9DE; Path=/; Expires=Thu, 20 Nov 2025 10:35:03 GMT; Max-Age=900; Secure; HttpOnly; SameSite=strict,refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTZlY3p2cTAwMDE0eng0dHo1ODVicXUiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk2ZDc1YmIwMDAwNHpxaTB6NXpkMTZhIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjM2MzQwMDMsImV4cCI6MTc2NjIyNjAwM30.xKLLck3I8TCJYZtyVvOx7A2LELpC2sXKaYOdBq2b48o; Path=/; Expires=Sat, 20 Dec 2025 10:20:03 GMT; Max-Age=2592000; Secure; HttpOnly; SameSite=strict
