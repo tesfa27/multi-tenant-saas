@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Tenant {
-    id        String   @id @default(cuid())
-      name      String
-        slug      String   @unique
-          users     
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
 }
 
 model User {
