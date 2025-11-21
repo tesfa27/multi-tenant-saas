@@ -19,31 +19,37 @@ export async function POST(
       return NextResponse.json({ error: "Missing tenant slug" }, { status: 400 });
     }
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email and password are required" },
+        { status: 400 }
+      );
     }
 
     // find tenant
-    const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
+    const tenant = await prisma.tenant.findUnique({
+      where: { slug: tenantSlug }
+    });
+
     if (!tenant) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    // find user under this tenant
+    // find user
     const user = await prisma.user.findUnique({
-      where: { tenantId_email: { tenantId: tenant.id, email } },
+      where: { tenantId_email: { tenantId: tenant.id, email } }
     });
 
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    // validate password
+    // compare password
     const valid = await compare(password, user.passwordHash!);
     if (!valid) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    // build JWT payload
+    // JWT payload
     const payload = {
       id: user.id,
       email: user.email,
@@ -51,11 +57,24 @@ export async function POST(
       role: user.role,
     };
 
-    // generate tokens using your functions
+    // generate tokens
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
 
-    // send cookies
+    // ❗ store refresh token in DB (delete old ones first)
+    await prisma.refreshToken.deleteMany({
+      where: { userId: user.id }
+    });
+
+    await prisma.refreshToken.create({
+      data: {
+        userId: user.id,
+        token: refreshToken,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+      }
+    });
+
+    // send response with cookies
     const res = NextResponse.json(
       {
         message: "Login successful",
@@ -63,11 +82,12 @@ export async function POST(
           id: user.id,
           email: user.email,
           name: user.name,
-        },
+        }
       },
       { status: 200 }
     );
 
+    // secure cookie: access token
     res.cookies.set("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
@@ -76,12 +96,13 @@ export async function POST(
       maxAge: 60 * 15, // 15 min
     });
 
+    // secure cookie: refresh token
     res.cookies.set("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days (your value)
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
     return res;

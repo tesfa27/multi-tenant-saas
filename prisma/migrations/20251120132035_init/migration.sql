@@ -15,6 +15,7 @@ CREATE TABLE "Tenant" (
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT,
     "role" "Role" NOT NULL DEFAULT 'USER',
