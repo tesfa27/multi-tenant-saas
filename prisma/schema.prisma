@@ -16,15 +16,26 @@ model Tenant {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  tenantId     String
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
-  email        String
-  passwordHash String?
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
+  id            String        @id @default(cuid())
+  tenantId      String
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  name          String
+  email         String
+  passwordHash  String?
+  role          Role          @default(USER)
+  createdAt     DateTime      @default(now())
+  refreshTokens RefreshToken[]
 
   @@unique([tenantId, email])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 enum Role {
