@@ -12,6 +12,7 @@ model Tenant {
   name      String
   slug      String   @unique
   users     User[]
+  projects  Project[]  
   createdAt DateTime @default(now())
 }
 
@@ -36,6 +37,15 @@ model RefreshToken {
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
 }
 
 enum Role {

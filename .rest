@@ -13,17 +13,27 @@ POST http://localhost:3000/api/acme/auth/login
 Content-Type: application/json
 
 {
-  "email": "tesfa@example.com",
+  "email": "alice@example.com",
   "password": "s3cr3t"
 }
 
 ### Get current authenticated user
 GET http://localhost:3000/api/acme/auth/me
-Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTdndXJlYjAwMDU0ejZxMGV5bW1zcWkiLCJlbWFpbCI6InRlc2ZhQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk3Z28xd3MwMDAwNHo5eWQwMXlzM3JjIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjM3MDQ0MTMsImV4cCI6MTc2MzcwNTMxM30.QlAdVKQIu2m94x7SueftSKYqxc-SYCX0oLaJhprApnM;
-### Logout (invalidates refresh token)
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTdndXJlYjAwMDU0ejZxMGV5bW1zcWkiLCJlbWFpbCI6InRlc2ZhQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk3Z28xd3MwMDAwNHo5eWQwMXlzM3JjIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjM3MTU2NDIsImV4cCI6MTc2MzcxNjU0Mn0.jL9tX6P3fQR5JlM_HuvFRD1Zr9ttbKPc4psTNhS__Ds
+
 POST http://localhost:3000/api/acme/auth/logout
 Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTZlY3p2cTAwMDE0eng0dHo1ODVicXUiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk2ZDc1YmIwMDAwNHpxaTB6NXpkMTZhIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjM2Mzc1MTcsImV4cCI6MTc2MzYzODQxN30.By7AuLnbO0X9GtSRP1J25c2k_RCXPKclVAs95ms7x-8; refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWk2ZWN6dnEwMDAxNHp4NHR6NTg1YnF1IiwidGVuYW50SWQiOiJjbWk2ZDc1YmIwMDAwNHpxaTB6NXpkMTZhIiwiaWF0IjoxNzYzNjM3NTE3LCJleHAiOjE3NjYyMjk1MTd9.z7KNSpai1dGe8O92QlYpe
 
 ### Refresh tokens
 POST http://localhost:3000/api/acme/auth/refresh
 Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTdndXJlYjAwMDU0ejZxMGV5bW1zcWkiLCJlbWFpbCI6InRlc2ZhQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk3Z28xd3MwMDAwNHo5eWQwMXlzM3JjIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjM3MDk2ODUsImV4cCI6MTc2NjMwMTY4NX0.cxhoFGn8cUjLrCO-FtuPJv7U0bqwjfbA48qDwjmn54o
+
+### Create Project (OWNER/ADMIN)
+POST http://localhost:3000/api/acme/projects
+Content-Type: application/json
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtaTdncDU1YzAwMDE0ejZxYjh4NHo4dXEiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwidGVuYW50SWQiOiJjbWk3Z28xd3MwMDAwNHo5eWQwMXlzM3JjIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzYzNzE3NTMyLCJleHAiOjE3NjM3MTg0MzJ9.trU8w-o0a40NgsTQCt7VUoFf74ra_Kic_vLp0IyfxWk
+
+{
+  "name": "New SaaS Project",
+  "description": "This is a sample project for tenant ACME"
+}
