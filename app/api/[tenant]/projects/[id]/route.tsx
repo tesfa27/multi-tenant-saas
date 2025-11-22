@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { verifyAccessToken } from "@/lib/jwt";
+import { getAccessToken } from "@/lib/auth/getAccessToken";
+import { authenticateUser } from "@/lib/auth/authenticate";
+import { requireTenant } from "@/lib/auth/requireTenant";
 
 const prisma = new PrismaClient();
 
@@ -21,32 +23,22 @@ export async function GET(
     }
 
     // Extract access token
-    const cookieHeader = req.headers.get("cookie") || "";
-    const accessToken = cookieHeader
-      .split("; ")
-      .find((c) => c.startsWith("accessToken="))
-      ?.split("=")[1];
-
-    if (!accessToken) {
-      return NextResponse.json({ error: "Missing access token" }, { status: 401 });
-    }
+     const accessToken = getAccessToken(req);
+      if (!accessToken) {
+        return NextResponse.json({ error: "Missing access token" }, { status: 401 });
+       }
 
     // Verify JWT
-    let payload: any;
-    try {
-      payload = verifyAccessToken(accessToken);
-    } catch {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    const user = authenticateUser(accessToken);
+     if (!user) {
+     return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
 
     // Find tenant
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug: tenantSlug },
-    });
-
+    const tenant = await requireTenant(tenantSlug);
     if (!tenant) {
-      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
-    }
+    return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+  }
 
     // Fetch project, ensure belongs to tenant
     const project = await prisma.project.findFirst({
