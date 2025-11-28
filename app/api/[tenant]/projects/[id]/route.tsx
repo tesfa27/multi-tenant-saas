@@ -130,3 +130,66 @@ export async function PUT(
     );
   }
 }
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ tenant: string; id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const tenantSlug = resolvedParams.tenant;
+    const projectId = resolvedParams.id;
+
+    // 1. Validate tenant
+    const tenant = await requireTenant(tenantSlug);
+    if (!tenant) {
+      return NextResponse.json(
+        { error: "Invalid tenant" },
+        { status: 404 }
+      );
+    }
+
+    // 2. Extract access token
+    const token = getAccessToken(req);
+    if (!token) {
+      return NextResponse.json(
+        { error: "Missing access token" },
+        { status: 401 }
+      );
+    }
+
+    // 3. Verify user identity
+    const user = await authenticateUser(token);
+
+    // 4. Require role (OWNER or ADMIN)
+    requireRole(user.role, ["OWNER", "ADMIN"]);
+
+    // 5. Validate project belongs to tenant
+    const existing = await prisma.project.findUnique({
+      where: { id: projectId, tenantId: tenant.id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    // 6. Delete project
+    await prisma.project.delete({
+      where: { id: projectId },
+    });
+
+    return NextResponse.json(
+      { message: "Project deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Failed to delete project" },
+      { status: 400 }
+    );
+  }
+}
