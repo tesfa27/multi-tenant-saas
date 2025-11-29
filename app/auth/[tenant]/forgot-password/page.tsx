@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Loader2, Mail, ArrowLeft } from "lucide-react";
 
 import AuthCard from "@/components/auth-card";
@@ -13,13 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Validation Schema
-const forgotPasswordSchema = z.object({
-    email: z.string().email("Please enter a valid email address"),
-});
-
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/auth-schemas";
 
 export default function ForgotPasswordPage() {
     const params = useParams();

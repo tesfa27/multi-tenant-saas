@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Loader2 } from "lucide-react";
 
 import AuthCard from "@/components/auth-card";
@@ -13,15 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Validation Schema
-const loginSchema = z.object({
-    email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    rememberMe: z.boolean().optional(),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormData } from "@/lib/auth-schemas";
 
 export default function LoginPage() {
     const router = useRouter();

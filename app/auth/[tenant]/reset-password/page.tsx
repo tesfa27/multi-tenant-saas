@@ -5,7 +5,6 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Loader2, Check, X, AlertCircle } from "lucide-react";
 
 import AuthCard from "@/components/auth-card";
@@ -14,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/auth-schemas";
 
 // Password strength checker (reused from register)
 const getPasswordStrength = (password: string): {
@@ -33,19 +33,6 @@ const getPasswordStrength = (password: string): {
     if (score <= 4) return { score, label: "Good", color: "text-blue-500" };
     return { score, label: "Strong", color: "text-green-500" };
 };
-
-// Validation Schema
-const resetPasswordSchema = z
-    .object({
-        password: z.string().min(8, "Password must be at least 8 characters"),
-        confirmPassword: z.string(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords don't match",
-        path: ["confirmPassword"],
-    });
-
-type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
     const router = useRouter();

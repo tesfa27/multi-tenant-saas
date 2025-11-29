@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Loader2, Check, X } from "lucide-react";
 
 import AuthCard from "@/components/auth-card";
@@ -14,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { registerSchema, type RegisterFormData } from "@/lib/auth-schemas";
 
 // Password strength checker
 const getPasswordStrength = (password: string): {
@@ -33,21 +33,6 @@ const getPasswordStrength = (password: string): {
     if (score <= 4) return { score, label: "Good", color: "text-blue-500" };
     return { score, label: "Strong", color: "text-green-500" };
 };
-
-// Validation Schema
-const registerSchema = z
-    .object({
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.string().email("Please enter a valid email address"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
-        confirmPassword: z.string(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords don't match",
-        path: ["confirmPassword"],
-    });
-
-type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
     const router = useRouter();
