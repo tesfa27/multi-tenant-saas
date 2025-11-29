@@ -185,16 +185,37 @@ export async function GET(
       );
     }
 
+    // Pagination
+    const { searchParams } = new URL(req.url);
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("limit")) || 20;
+    const skip = (page - 1) * limit;
+
     // Fetch members
     const members = await prisma.tenantUser.findMany({
       where: { tenantId: tenantRecord.id },
+      skip,
+      take: limit,
       include: {
         user: { select: { id: true, email: true, name: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ members }, { status: 200 });
+    const total = await prisma.tenantUser.count({
+      where: { tenantId: tenantRecord.id },
+    });
+
+    return NextResponse.json(
+      {
+        members,
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("List members error:", err);
     return NextResponse.json(
