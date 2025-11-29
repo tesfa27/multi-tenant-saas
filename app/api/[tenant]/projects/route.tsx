@@ -4,6 +4,7 @@ import { getAccessToken } from "@/lib/auth/getAccessToken";
 import { authenticateUser } from "@/lib/auth/authenticate";
 import { requireTenant } from "@/lib/auth/requireTenant";
 import { requireRole } from "@/lib/auth/roles";
+import { getTenantUserRole } from "@/lib/auth/getTenantUserRole";
 
 const prisma = new PrismaClient();
 
@@ -29,9 +30,21 @@ export async function POST(
      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
 
+    // Validate tenant
+    const tenantRecord = await requireTenant(tenant);
+    if (!tenantRecord) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+    }
+
+    // Verify membership & Get Role in this Tenant
+    const tenantRole = await getTenantUserRole(user.id, tenantRecord.id);
+    if (!tenantRole) {
+      return NextResponse.json({ error: "Unauthorized Access to Tenant" }, { status: 403 });
+    }
+
     // Check role
     try {
-      requireRole(user.role, ["OWNER", "ADMIN"]);
+      requireRole(tenantRole, ["OWNER", "ADMIN"]);
     } catch (err: any) {
       return NextResponse.json({ error: err.message }, { status: 403 });
     }
@@ -44,11 +57,6 @@ export async function POST(
       return NextResponse.json({ error: "Project name is required" }, { status: 400 });
     }
 
-    // Validate tenant
-    const tenantRecord = await requireTenant(tenant);
-    if (!tenantRecord) {
-      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
-    }
 
     // Create new project
     const project = await prisma.project.create({
@@ -93,6 +101,13 @@ export async function GET(
     if (!tenantRecord) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
+
+    // Verify membership
+    const tenantRole = await getTenantUserRole(user.id, tenantRecord.id);
+    if (!tenantRole) {
+      return NextResponse.json({ error: "Unauthorized Access to Tenant" }, { status: 403 });
+    }
+
 
     // Pagination
     const { searchParams } = new URL(req.url);

@@ -4,6 +4,7 @@ import { getAccessToken } from "@/lib/auth/getAccessToken";
 import { authenticateUser } from "@/lib/auth/authenticate";
 import { requireTenant } from "@/lib/auth/requireTenant";
 import { requireRole } from "@/lib/auth/roles";
+import { getTenantUserRole } from "@/lib/auth/getTenantUserRole";
 
 const prisma = new PrismaClient();
 
@@ -40,6 +41,12 @@ export async function GET(
     if (!tenant) {
     return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
   }
+
+  // Verify membership
+    const tenantRole = await getTenantUserRole(user.id, tenant.id);
+    if (!tenantRole) {
+      return NextResponse.json({ error: "Unauthorized Access to Tenant" }, { status: 403 });
+    }
 
     // Fetch project, ensure belongs to tenant
     const project = await prisma.project.findFirst({
@@ -94,8 +101,14 @@ export async function PUT(
     // 3. Verify user
     const user = await authenticateUser(token);
 
+    // Verify membership
+    const tenantRole = await getTenantUserRole(user.id, tenant.id);
+    if (!tenantRole) {
+      return NextResponse.json({ error: "Unauthorized Access to Tenant" }, { status: 403 });
+    }
+
     // 4. Require role (OWNER or ADMIN)
-    requireRole(user.role, ["OWNER", "ADMIN"]);
+    requireRole(tenantRole, ["OWNER", "ADMIN"]);
 
     // 5. Validate project belongs to tenant
     const existing = await prisma.project.findUnique({
@@ -162,8 +175,14 @@ export async function DELETE(
     // 3. Verify user identity
     const user = await authenticateUser(token);
 
+    // Verify membership
+    const tenantRole = await getTenantUserRole(user.id, tenant.id);
+    if (!tenantRole) {
+      return NextResponse.json({ error: "Unauthorized Access to Tenant" }, { status: 403 });
+    }
+
     // 4. Require role (OWNER or ADMIN)
-    requireRole(user.role, ["OWNER", "ADMIN"]);
+    requireRole(tenantRole, ["OWNER", "ADMIN"]);
 
     // 5. Validate project belongs to tenant
     const existing = await prisma.project.findUnique({

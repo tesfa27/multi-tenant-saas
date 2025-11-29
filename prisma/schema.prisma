@@ -14,6 +14,8 @@ model Tenant {
   users     User[]
   projects  Project[]  
   createdAt DateTime @default(now())
+
+  tenantUsers TenantUser[]
 }
 
 model User {
@@ -26,8 +28,22 @@ model User {
   role          Role          @default(USER)
   createdAt     DateTime      @default(now())
   refreshTokens RefreshToken[]
+  tenantUsers   TenantUser[]
 
   @@unique([tenantId, email])
+}
+
+model TenantUser {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId])
 }
 
 model RefreshToken {
