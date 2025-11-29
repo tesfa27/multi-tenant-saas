@@ -1,47 +1,51 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 export default function MembersPage() {
     return (
         <div className="p-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Members</h1>
-                    <p className="mt-2 text-gray-600">
+                    <h1 className="text-3xl font-bold tracking-tight">Members</h1>
+                    <p className="text-muted-foreground">
                         Manage your team members and their roles
                     </p>
                 </div>
-                <button className="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
-                    <UserPlus className="h-4 w-4" />
+                <Button>
+                    <UserPlus className="mr-2 h-4 w-4" />
                     Add Member
-                </button>
+                </Button>
             </div>
 
             {/* Members Table */}
-            <div className="rounded-lg border bg-white shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="border-b bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <Card>
+                <div className="relative w-full overflow-auto">
+                    <table className="w-full caption-bottom text-sm">
+                        <thead className="border-b">
+                            <tr className="border-b transition-colors hover:bg-muted/50">
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                                     Member
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                                     Email
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                                     Role
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                                     Joined
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="[&_tr:last-child]:border-0">
                             {/* Placeholder rows */}
                             {[
                                 { name: "John Doe", email: "john@example.com", role: "OWNER" },
@@ -49,42 +53,50 @@ export default function MembersPage() {
                                 { name: "Bob Johnson", email: "bob@example.com", role: "USER" },
                                 { name: "Alice Williams", email: "alice@example.com", role: "USER" },
                             ].map((member, i) => (
-                                <tr key={i} className="hover:bg-gray-50">
-                                    <td className="whitespace-nowrap px-6 py-4">
+                                <tr
+                                    key={i}
+                                    className="border-b transition-colors hover:bg-muted/50"
+                                >
+                                    <td className="p-4 align-middle">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gray-300" />
-                                            <div className="text-sm font-medium text-gray-900">
-                                                {member.name}
-                                            </div>
+                                            <Avatar>
+                                                <AvatarFallback>
+                                                    {member.name.split(" ").map(n => n[0]).join("")}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="font-medium">{member.name}</div>
                                         </div>
                                     </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                    <td className="p-4 align-middle text-muted-foreground">
                                         {member.email}
                                     </td>
-                                    <td className="whitespace-nowrap px-6 py-4">
-                                        <span
-                                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${member.role === "OWNER"
-                                                    ? "bg-purple-100 text-purple-800"
+                                    <td className="p-4 align-middle">
+                                        <Badge
+                                            variant={
+                                                member.role === "OWNER"
+                                                    ? "default"
                                                     : member.role === "ADMIN"
-                                                        ? "bg-blue-100 text-blue-800"
-                                                        : "bg-gray-100 text-gray-800"
-                                                }`}
+                                                        ? "secondary"
+                                                        : "outline"
+                                            }
                                         >
                                             {member.role}
-                                        </span>
+                                        </Badge>
                                     </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                    <td className="p-4 align-middle text-muted-foreground">
                                         2024-01-{(i + 1).toString().padStart(2, "0")}
                                     </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                        <button className="text-blue-600 hover:text-blue-800">
-                                            Edit Role
-                                        </button>
-                                        {member.role !== "OWNER" && (
-                                            <button className="ml-4 text-red-600 hover:text-red-800">
-                                                Remove
-                                            </button>
-                                        )}
+                                    <td className="p-4 align-middle">
+                                        <div className="flex gap-2">
+                                            <Button variant="ghost" size="sm">
+                                                Edit Role
+                                            </Button>
+                                            {member.role !== "OWNER" && (
+                                                <Button variant="ghost" size="sm">
+                                                    Remove
+                                                </Button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -93,20 +105,20 @@ export default function MembersPage() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between border-t px-6 py-3">
-                    <div className="text-sm text-gray-500">
+                <div className="flex items-center justify-between border-t px-4 py-4">
+                    <div className="text-sm text-muted-foreground">
                         Showing 1 to 4 of 4 members
                     </div>
                     <div className="flex gap-2">
-                        <button className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                        <Button variant="outline" size="sm">
                             Previous
-                        </button>
-                        <button className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                        </Button>
+                        <Button variant="outline" size="sm">
                             Next
-                        </button>
+                        </Button>
                     </div>
                 </div>
-            </div>
+            </Card>
         </div>
     );
 }

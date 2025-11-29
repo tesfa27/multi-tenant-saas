@@ -5,6 +5,9 @@ import { useParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, FolderKanban, Users } from "lucide-react";
 import TenantSwitcher from "./tenant-switcher";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 const navigation = [
     { name: "Dashboard", href: "", icon: LayoutDashboard },
@@ -18,43 +21,47 @@ export default function Sidebar() {
     const tenant = params.tenant as string;
 
     return (
-        <div className="flex h-screen w-64 flex-col border-r bg-gray-50">
+        <div className="flex h-screen w-64 flex-col border-r bg-background">
             {/* Tenant Switcher */}
-            <div className="border-b p-4">
+            <div className="p-4">
                 <TenantSwitcher />
             </div>
 
+            <Separator />
+
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 px-3 py-4">
+            <nav className="flex-1 space-y-1 p-3">
                 {navigation.map((item) => {
                     const href = `/${tenant}${item.href}`;
                     const isActive = pathname === href;
 
                     return (
-                        <Link
+                        <Button
                             key={item.name}
-                            href={href}
-                            className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                                isActive
-                                    ? "bg-gray-900 text-white"
-                                    : "text-gray-700 hover:bg-gray-200"
-                            )}
+                            variant={isActive ? "secondary" : "ghost"}
+                            className="w-full justify-start"
+                            asChild
                         >
-                            <item.icon className="h-5 w-5" />
-                            {item.name}
-                        </Link>
+                            <Link href={href}>
+                                <item.icon className="mr-2 h-4 w-4" />
+                                {item.name}
+                            </Link>
+                        </Button>
                     );
                 })}
             </nav>
 
-            {/* User Section (Placeholder) */}
-            <div className="border-t p-4">
+            <Separator />
+
+            {/* User Section */}
+            <div className="p-4">
                 <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-gray-300" />
-                    <div className="text-sm">
+                    <Avatar>
+                        <AvatarFallback>UN</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 text-sm">
                         <p className="font-medium">User Name</p>
-                        <p className="text-gray-500">user@example.com</p>
+                        <p className="text-muted-foreground">user@example.com</p>
                     </div>
                 </div>
             </div>
