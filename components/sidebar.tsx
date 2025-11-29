@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, FolderKanban, Users } from "lucide-react";
+import TenantSwitcher from "./tenant-switcher";
 
 const navigation = [
     { name: "Dashboard", href: "", icon: LayoutDashboard },
@@ -18,9 +19,9 @@ export default function Sidebar() {
 
     return (
         <div className="flex h-screen w-64 flex-col border-r bg-gray-50">
-            {/* Logo/Tenant Name */}
-            <div className="flex h-16 items-center border-b px-6">
-                <h1 className="text-xl font-bold">{tenant}</h1>
+            {/* Tenant Switcher */}
+            <div className="border-b p-4">
+                <TenantSwitcher />
             </div>
 
             {/* Navigation */}
