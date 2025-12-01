@@ -55,6 +55,16 @@ model RefreshToken {
   createdAt DateTime @default(now())
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
 model Project {
   id          String   @id @default(cuid())
   tenantId    String
