@@ -13,7 +13,7 @@ export async function POST(
     const resolvedParams = await params;
     const tenantSlug = resolvedParams.tenant;
 
-    const { email, password } = await req.json();
+    const { email, password,rememberMe } = await req.json();
 
     if (!tenantSlug) {
       return NextResponse.json({ error: "Missing tenant slug" }, { status: 400 });
@@ -57,6 +57,13 @@ export async function POST(
       role: user.role,
     };
 
+     // Calculate expiration based on rememberMe
+    // 30 days if remembered, 7 days if not (or 24h, user suggested 7 days in prompt)
+    const refreshMaxAge = rememberMe
+      ? 60 * 60 * 24 * 30 // 30 days
+      : 60 * 60 * 24 * 7; // 7 days
+
+
     // generate tokens
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
@@ -70,7 +77,7 @@ export async function POST(
       data: {
         userId: user.id,
         token: refreshToken,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+        expiresAt: new Date(Date.now() + refreshMaxAge * 1000),
       }
     });
 
@@ -102,7 +109,7 @@ export async function POST(
       secure: true,
       sameSite: "strict",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: refreshMaxAge,
     });
 
     return res;
