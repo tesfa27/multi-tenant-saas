@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/auth-schemas";
+import { resetPassword, validateResetToken } from "@/lib/api/auth";
 
 // Password strength checker (reused from register)
 const getPasswordStrength = (password: string): {
@@ -66,30 +67,25 @@ export default function ResetPasswordPage() {
                 return;
             }
 
-            // Mock token validation
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            // Placeholder: In real app, validate token via API
-            // GET /api/[tenant]/auth/validate-reset-token?token=xyz
-
-            // Mock: Accept any token that's at least 10 characters
-            setTokenValid(token.length >= 10);
+            try {
+                const { valid } = await validateResetToken(tenant, token);
+                setTokenValid(valid);
+            } catch (error) {
+                setTokenValid(false);
+            }
         };
 
         validateToken();
-    }, [token]);
+    }, [token, tenant]);
 
     const onSubmit = async (data: ResetPasswordFormData) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            // Mock API call - simulate network delay
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            if (!token) throw new Error("Missing reset token");
 
-            // Placeholder: In real app, reset password via API
-            // POST /api/[tenant]/auth/reset-password
-            // Body: { token, password }
+            await resetPassword(tenant, token, data.password);
 
             setSuccess(true);
 

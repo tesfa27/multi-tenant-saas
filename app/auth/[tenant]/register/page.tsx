@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { registerSchema, type RegisterFormData } from "@/lib/auth-schemas";
+import { registerUser } from "@/lib/api/auth";
 
 // Password strength checker
 const getPasswordStrength = (password: string): {
@@ -60,13 +61,11 @@ export default function RegisterPage() {
         setError(null);
 
         try {
-            // Mock API call - simulate network delay
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            // Mock validation - simulate email already exists
-            if (data.email === "existing@example.com") {
-                throw new Error("Email already exists for this tenant");
-            }
+            await registerUser(tenant, {
+                name: data.name,
+                email: data.email,
+                password: data.password,
+            });
 
             // Success
             setSuccess(true);

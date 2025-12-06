@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { loginSchema, type LoginFormData } from "@/lib/auth-schemas";
+import { loginUser } from "@/lib/api/auth";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -36,18 +37,13 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
         setError(null);
-
         try {
-            // Mock API call - simulate network delay
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            // Mock validation - accept any email/password for demo
-            if (data.email && data.password.length >= 6) {
-                // Success - redirect to tenant dashboard
-                router.push(`/${tenant}`);
-            } else {
-                throw new Error("Invalid credentials");
-            }
+            await loginUser(tenant, {
+                email: data.email,
+                password: data.password,
+                rememberMe: data.rememberMe,
+            });
+            router.push(`/${tenant}`);
         } catch (err: any) {
             setError(err.message || "Invalid email or password. Please try again.");
         } finally {

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/auth-schemas";
+import { requestPasswordReset } from "@/lib/api/auth";
 
 export default function ForgotPasswordPage() {
     const params = useParams();
@@ -36,11 +37,7 @@ export default function ForgotPasswordPage() {
         setError(null);
 
         try {
-            // Mock API call - simulate network delay
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            // Placeholder: In real app, send reset email via API
-            // POST /api/[tenant]/auth/forgot-password
+            await requestPasswordReset(tenant, data.email);
 
             setSubmittedEmail(data.email);
             setSuccess(true);
