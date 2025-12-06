@@ -130,10 +130,12 @@ export async function GET(
     return NextResponse.json(
       {
         projects,
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
       { status: 200 }
     );
