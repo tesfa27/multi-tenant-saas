@@ -1,12 +1,28 @@
 "use client";
 
-import { UserPlus } from "lucide-react";
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { UserPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useMembers } from "@/lib/hooks/use-members";
+import type { Member } from "@/lib/api/members";
+import { AddMemberDialog } from "@/components/members/add-member-dialog";
+import { EditMemberRoleDialog } from "@/components/members/edit-member-role-dialog";
+import { RemoveMemberDialog } from "@/components/members/remove-member-dialog";
 
 export default function MembersPage() {
+    const params = useParams();
+    const tenant = params.tenant as string;
+    const [page, setPage] = useState(1);
+    const [editingMember, setEditingMember] = useState<Member | null>(null);
+    const [removingMember, setRemovingMember] = useState<Member | null>(null);
+
+
+    const { data, isLoading, isError } = useMembers(tenant, page, 10, "");
+
     return (
         <div className="p-8">
             <div className="mb-8 flex items-center justify-between">
@@ -16,10 +32,7 @@ export default function MembersPage() {
                         Manage your team members and their roles
                     </p>
                 </div>
-                <Button>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Add Member
-                </Button>
+                <AddMemberDialog tenantId={tenant} />
             </div>
 
             {/* Members Table */}
@@ -46,60 +59,86 @@ export default function MembersPage() {
                             </tr>
                         </thead>
                         <tbody className="[&_tr:last-child]:border-0">
-                            {/* Placeholder rows */}
-                            {[
-                                { name: "John Doe", email: "john@example.com", role: "OWNER" },
-                                { name: "Jane Smith", email: "jane@example.com", role: "ADMIN" },
-                                { name: "Bob Johnson", email: "bob@example.com", role: "USER" },
-                                { name: "Alice Williams", email: "alice@example.com", role: "USER" },
-                            ].map((member, i) => (
-                                <tr
-                                    key={i}
-                                    className="border-b transition-colors hover:bg-muted/50"
-                                >
-                                    <td className="p-4 align-middle">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar>
-                                                <AvatarFallback>
-                                                    {member.name.split(" ").map(n => n[0]).join("")}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="font-medium">{member.name}</div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4 align-middle text-muted-foreground">
-                                        {member.email}
-                                    </td>
-                                    <td className="p-4 align-middle">
-                                        <Badge
-                                            variant={
-                                                member.role === "OWNER"
-                                                    ? "default"
-                                                    : member.role === "ADMIN"
-                                                        ? "secondary"
-                                                        : "outline"
-                                            }
-                                        >
-                                            {member.role}
-                                        </Badge>
-                                    </td>
-                                    <td className="p-4 align-middle text-muted-foreground">
-                                        2024-01-{(i + 1).toString().padStart(2, "0")}
-                                    </td>
-                                    <td className="p-4 align-middle">
-                                        <div className="flex gap-2">
-                                            <Button variant="ghost" size="sm">
-                                                Edit Role
-                                            </Button>
-                                            {member.role !== "OWNER" && (
-                                                <Button variant="ghost" size="sm">
-                                                    Remove
-                                                </Button>
-                                            )}
-                                        </div>
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={5} className="h-24 text-center">
+                                        <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                                     </td>
                                 </tr>
-                            ))}
+                            ) : isError ? (
+                                <tr>
+                                    <td colSpan={5} className="h-24 text-center text-destructive">
+                                        Failed to load members.
+                                    </td>
+                                </tr>
+                            ) : data?.members.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="h-24 text-center text-muted-foreground">
+                                        No members found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                data?.members.map((member: Member) => (
+                                    <tr
+                                        key={member.id}
+                                        className="border-b transition-colors hover:bg-muted/50"
+                                    >
+                                        <td className="p-4 align-middle">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarFallback>
+                                                        {member.user.name
+                                                            .split(" ")
+                                                            .map((n) => n[0])
+                                                            .join("")}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="font-medium">{member.user.name}</div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4 align-middle text-muted-foreground">
+                                            {member.user.email}
+                                        </td>
+                                        <td className="p-4 align-middle">
+                                            <Badge
+                                                variant={
+                                                    member.role === "OWNER"
+                                                        ? "default"
+                                                        : member.role === "ADMIN"
+                                                            ? "secondary"
+                                                            : "outline"
+                                                }
+                                            >
+                                                {member.role}
+                                            </Badge>
+                                        </td>
+                                        <td className="p-4 align-middle text-muted-foreground">
+                                            {new Date(member.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-4 align-middle">
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setEditingMember(member)}
+                                                    disabled={member.role === "OWNER"}
+                                                >
+                                                    Edit Role
+                                                </Button>
+                                                {member.role !== "OWNER" && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setRemovingMember(member)}
+                                                    >
+                                                        Remove
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -107,18 +146,57 @@ export default function MembersPage() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between border-t px-4 py-4">
                     <div className="text-sm text-muted-foreground">
-                        Showing 1 to 4 of 4 members
+                        {data?.pagination && (
+                            <>
+                                Showing {(data.pagination.page - 1) * data.pagination.limit + 1} to{" "}
+                                {Math.min(
+                                    data.pagination.page * data.pagination.limit,
+                                    data.pagination.total
+                                )}{" "}
+                                of {data.pagination.total} members
+                            </>
+                        )}
                     </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1 || isLoading}
+                        >
                             Previous
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage((p) => p + 1)}
+                            disabled={
+                                !data?.pagination ||
+                                page >= data.pagination.totalPages ||
+                                isLoading
+                            }
+                        >
                             Next
                         </Button>
                     </div>
                 </div>
             </Card>
+
+            {/* Edit Member Role Dialog */}
+            <EditMemberRoleDialog
+                tenantId={tenant}
+                member={editingMember}
+                open={!!editingMember}
+                onOpenChange={(open: boolean) => !open && setEditingMember(null)}
+            />
+
+            {/* Remove Member Dialog */}
+            <RemoveMemberDialog
+                tenantId={tenant}
+                member={removingMember}
+                open={!!removingMember}
+                onOpenChange={(open: boolean) => !open && setRemovingMember(null)}
+            />
         </div>
     );
 }
