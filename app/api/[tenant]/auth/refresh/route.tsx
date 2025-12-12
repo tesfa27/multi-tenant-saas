@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs"; // requested import
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "@/lib/jwt";
 
-const prisma = new PrismaClient();
+
 
 export async function POST(
   req: Request,

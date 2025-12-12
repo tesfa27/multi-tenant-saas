@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
     req: Request,
@@ -12,8 +12,6 @@ export async function GET(
         if (!token) {
             return NextResponse.json({ valid: false }, { status: 400 });
         }
-
-        const prisma = new PrismaClient();
 
         // 1. Find token
         // @ts-ignore
