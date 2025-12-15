@@ -18,9 +18,14 @@ interface FetchOptions extends RequestInit {
     _retry?: boolean;
 }
 
-// Token refresh queue handling
+/**
+ * Token refresh queue handling
+ */
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
+}> = [];
 
 const processQueue = (error: any, token: any = null) => {
     failedQueue.forEach((prom) => {
@@ -30,9 +35,20 @@ const processQueue = (error: any, token: any = null) => {
             prom.resolve(token);
         }
     });
-
     failedQueue = [];
 };
+
+/**
+ * Safely extract tenant from URL
+ * Expected path: /{tenant}/...
+ */
+function getTenantFromPath(): string | null {
+    if (typeof window === "undefined") return null;
+
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    // parts[0] === tenant
+    return parts.length > 0 ? parts[0] : null;
+}
 
 /**
  * Base fetch wrapper with error handling
@@ -53,78 +69,82 @@ export async function apiClient<T = any>(
             credentials: "include", // Include cookies for authentication
         });
 
-        // Handle non-JSON responses (e.g., 204 No Content)
+        /**
+         * 204 No Content
+         */
         if (response.status === 204) {
             return {} as T;
         }
 
-        // Intercept 401s to refresh token
+        /**
+         * Intercept 401 → attempt token refresh
+         */
         if (response.status === 401 && !skipAuth && !_retry) {
             if (isRefreshing) {
-                // If already refreshing, queue this request
-                return new Promise(function (resolve, reject) {
+                return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
-                })
-                    .then(() => {
-                        return apiClient<T>(url, { ...options, _retry: true });
-                    })
-                    .catch((err) => {
-                        return Promise.reject(err);
-                    });
+                }).then(() => {
+                    return apiClient<T>(url, { ...options, _retry: true });
+                });
             }
 
-            // Extract tenant from current URL to call refresh endpoint
-            const pathParts = window.location.pathname.split("/");
-            const tenant = pathParts[1];
+            const tenant = getTenantFromPath();
 
             if (tenant) {
-                options._retry = true;
                 isRefreshing = true;
 
                 try {
-                    // Call refresh endpoint directly (avoiding circular dependency)
-                    const refreshResponse = await fetch(`/api/${tenant}/auth/refresh`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                    });
+                    const refreshResponse = await fetch(
+                        `/api/${tenant}/auth/refresh`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                        }
+                    );
 
                     if (!refreshResponse.ok) {
-                        throw new Error("Refresh failed");
+                        throw new Error("Token refresh failed");
                     }
 
-                    // Refresh success - process queue
                     processQueue(null, true);
                     isRefreshing = false;
 
-                    // Retry original request (with _retry=true to prevent infinite loop)
                     return apiClient<T>(url, { ...options, _retry: true });
                 } catch (refreshError) {
-                    // Refresh failed - reject queue
                     processQueue(refreshError, null);
                     isRefreshing = false;
-
-                    // Proceed to legacy redirect logic below...
+                    // Fall through to redirect logic
                 }
             }
         }
 
+        /**
+         * Parse JSON response
+         */
         const data = await response.json();
 
-        // Handle error responses
+        /**
+         * Handle error responses
+         */
         if (!response.ok) {
-            // 401 Unauthorized - redirect to login
             if (response.status === 401 && !skipAuth) {
-                // Extract tenant from current URL
-                const pathParts = window.location.pathname.split("/");
-                const tenant = pathParts[1]; // Assumes /{tenant}/... structure
+                const tenant = getTenantFromPath();
+                const pathname = window.location.pathname;
 
-                if (tenant && !window.location.pathname.includes("/auth/")) {
-                    window.location.href = `/auth/${tenant}/login`;
+                // Avoid redirect loops on auth pages
+                const isAuthPage =
+                    pathname.includes("/auth/login") ||
+                    pathname.includes("/auth/register") ||
+                    pathname.includes("/auth/verify");
+
+                if (tenant && !isAuthPage) {
+                    window.location.href = `/${tenant}/auth/login`;
                 }
             }
 
             throw new ApiError(
-                data.error || data.message || "An error occurred",
+                data?.error || data?.message || "An error occurred",
                 response.status,
                 data
             );
@@ -136,7 +156,6 @@ export async function apiClient<T = any>(
             throw error;
         }
 
-        // Network or other errors
         throw new ApiError(
             "Network error. Please check your connection.",
             0

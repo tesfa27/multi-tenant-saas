@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getAccessToken } from "@/lib/auth/getAccessToken";
 import { authenticateUser } from "@/lib/auth/authenticate";
 import { requireTenant } from "@/lib/auth/requireTenant";
 import { requireRole } from "@/lib/auth/roles";
 import { getTenantUserRole } from "@/lib/auth/getTenantUserRole";
-
-const prisma = new PrismaClient();
 
 export async function GET(
   req: Request,

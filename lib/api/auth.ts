@@ -38,6 +38,23 @@ export interface MeResponse {
 }
 
 /**
+ * Magic Link API Types
+ */
+export interface MagicLinkRequest {
+    email: string;
+}
+
+export interface MagicLinkResponse {
+    message: string;
+}
+
+export interface MagicLoginResponse {
+    message: string;
+    user: User;
+}
+
+
+/**
  * Authentication API Functions
  */
 
@@ -155,3 +172,38 @@ export async function resetPassword(
         }
     );
 }
+
+/**
+ * Request magic login link (passwordless)
+ */
+export async function requestMagicLink(
+    tenant: string,
+    email: string
+): Promise<MagicLinkResponse> {
+    return apiClient<MagicLinkResponse>(
+        buildApiUrl(tenant, "/auth/magic-link"),
+        {
+            method: "POST",
+            body: JSON.stringify({ email }),
+            skipAuth: true, // user is not authenticated yet
+        }
+    );
+}
+
+/**
+ * Verify magic link token and log in
+ */
+export async function magicLogin(
+    tenant: string,
+    token: string
+): Promise<MagicLoginResponse> {
+    return apiClient<MagicLoginResponse>(
+        buildApiUrl(tenant, "/auth/magic-login"),
+        {
+            method: "POST",
+            body: JSON.stringify({ token }),
+            skipAuth: true, // token-based login
+        }
+    );
+}
+

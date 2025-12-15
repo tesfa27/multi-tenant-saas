@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import Providers from "../providers";
+import Providers from "../../providers";
 import Sidebar from "@/components/sidebar";
 import { AuthGuard } from "@/components/auth-guard";
 

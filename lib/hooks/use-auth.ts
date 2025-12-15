@@ -36,7 +36,7 @@ export const useAuth = (tenantId: string) => {
             // Clear all queries
             queryClient.clear();
             // Redirect to login
-            router.push(`/auth/${tenantId}/login`);
+            router.push(`/${tenantId}/auth/login`);
         },
     });
 

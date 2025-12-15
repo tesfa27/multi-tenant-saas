@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { loginSchema, type LoginFormData } from "@/lib/auth-schemas";
 import { loginUser } from "@/lib/api/auth";
+import MagicLinkForm from "@/components/auth/MagicLinkForm";
+import GoogleSignInButton from "@/components/auth/google-button";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -85,7 +87,7 @@ export default function LoginPage() {
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password">Password</Label>
                         <Link
-                            href={`/auth/${tenant}/forgot-password`}
+                            href={`/${tenant}/auth/forgot-password`}
                             className="text-sm text-muted-foreground hover:text-primary"
                         >
                             Forgot password?
@@ -138,13 +140,42 @@ export default function LoginPage() {
                 <div className="text-center text-sm text-muted-foreground">
                     Don't have an account?{" "}
                     <Link
-                        href={`/auth/${tenant}/register`}
+                        href={`/${tenant}/auth/register`}
                         className="font-medium text-primary hover:underline"
                     >
                         Sign up
                     </Link>
                 </div>
             </form>
+
+            <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                        Or continue with
+                    </span>
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <GoogleSignInButton tenant={tenant} />
+
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                            Magic Link
+                        </span>
+                    </div>
+                </div>
+
+                <MagicLinkForm />
+            </div>
+
         </AuthCard>
     );
 }

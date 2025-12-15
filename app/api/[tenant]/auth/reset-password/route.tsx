@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(
     req: Request,
@@ -17,7 +17,6 @@ export async function POST(
             );
         }
 
-        const prisma = new PrismaClient();
         const { hash } = require("bcryptjs");
 
         // 1. Find the token
