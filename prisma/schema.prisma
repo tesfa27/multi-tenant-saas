@@ -24,6 +24,7 @@ model User {
   tenant        Tenant        @relation(fields: [tenantId], references: [id])
   name          String
   email         String
+  provider      String?
   passwordHash  String?
   role          Role          @default(USER)
   createdAt     DateTime      @default(now())

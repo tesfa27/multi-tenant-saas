@@ -72,7 +72,7 @@ export default function RegisterPage() {
 
             // Wait 1.5s to show success message, then redirect
             setTimeout(() => {
-                router.push(`/auth/${tenant}/login`);
+                router.push(`/${tenant}/auth/login`);
             }, 1500);
         } catch (err: any) {
             setError(err.message || "Registration failed. Please try again.");
